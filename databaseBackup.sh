@@ -1,12 +1,12 @@
 #!/bin/bash
 # DATABASE BACKUP SCRIPT
 # POPULATE THE FOLLOWING VARIABLES:
-#   DATABASELOCATION, BACKUPLOCATION
+#   WORKINGDIR, BACKUPLOCATION
 
 DATE=$(date +%F.%T)
 
-# Location of database file(s)
-DATABASELOCATION=""
+WORKINGDIR="/home/ec2-user/db_backups"
+cd $WORKINGDIR
 
 # Three different arguments may be specified.
 # -d : daily backup
@@ -16,15 +16,14 @@ while getopts dwm option
 do
     case "${option}"
         in
-        d) BACKUPLOCATION="/daily";;
-        w) BACKUPLOCATION="/weekly";;
-        m) BACKUPLOCATION="/monthly";;
+        d) BACKUPLOCATION="daily";;
+        w) BACKUPLOCATION="weekly";;
+        m) BACKUPLOCATION="monthly";;
     esac
 done
 
-rsync -rav $DATABASELOCATION $BACKUPLOCATION/$DATE
+# rsync -rav $DATABASELOCATION $BACKUPLOCATION/$DATE
+mysqldump --all-databases > $BACKUPLOCATION/$DATE.sql
 
 # Only keep 2 backups
-find $BACKUPLOCATION/* -type d | sort -r | sed -n '3,$p' | xargs rm -r
-
-# TODO: Check if there are more that 2 backups before attempting to remove
+find $BACKUPLOCATION/* -type f | sort -r | sed -n '3,$p' | xargs rm
